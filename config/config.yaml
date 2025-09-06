@@ -1,0 +1,18 @@
+storage:
+  user: "postgres"
+  password: "123"
+  host: "localhost"
+  port: "5433"
+  dbname: "Orders"
+  sslmode: "disable"
+rest:
+  addr: "localhost:8080"
+kafka:
+  brokers:
+    - "localhost:9092"
+  topic: "test"
+redis:
+  redis_addr: "localhost:6379"
+  redis_password: "123"
+  db: 0
+log_level: "debug"
