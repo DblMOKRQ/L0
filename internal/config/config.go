@@ -5,14 +5,15 @@ import (
 	"gopkg.in/yaml.v3"
 	"os"
 	"path/filepath"
+	"time"
 )
 
 type Config struct {
 	Storage  `yaml:"storage"`
 	Rest     `yaml:"rest"`
 	Kafka    `yaml:"kafka"`
-	Redis    `yaml:"redis_client"`
-	LogLevel string `yaml:"logLevel"`
+	Redis    `yaml:"redis"`
+	LogLevel string `yaml:"log_level"`
 }
 
 type Storage struct {
@@ -36,6 +37,11 @@ type Redis struct {
 	RedisAddr     string `yaml:"redis_addr"`
 	RedisPassword string `yaml:"redis_password"`
 	DB            int    `yaml:"db"`
+	Cache
+}
+type Cache struct {
+	TTL   time.Duration `yaml:"ttl"`
+	Limit int           `yaml:"limit"`
 }
 
 func MustLoad() *Config {

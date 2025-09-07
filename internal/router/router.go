@@ -13,13 +13,20 @@ type Router struct {
 	log     *zap.Logger
 }
 
-func NewRouter(handler *handlers.OrderHandlers, log *zap.Logger) *Router {
+func NewRouter(handler *handlers.OrderHandlers, mode string, log *zap.Logger) *Router {
 	router := &Router{
 		rout:    gin.Default(),
 		handler: handler,
 		log:     log,
 	}
 	router.setupRouter()
+	switch mode {
+	case "debug":
+		gin.SetMode(gin.DebugMode)
+		break
+	default:
+		gin.SetMode(gin.ReleaseMode)
+	}
 	return router
 }
 func (r *Router) setupRouter() {

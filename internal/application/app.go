@@ -40,7 +40,7 @@ func NewApp(service *service.OrderService, router *router.Router, addr string, l
 	}
 }
 
-func (a *App) Run(ttl time.Duration) error {
+func (a *App) Run(limit int) error {
 	// Канал для сигналов ОС
 	sigCh := make(chan os.Signal, 1)
 	signal.Notify(sigCh, os.Interrupt, syscall.SIGTERM)
@@ -49,11 +49,19 @@ func (a *App) Run(ttl time.Duration) error {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
+	a.wg.Add(1)
+	go func() {
+		defer a.wg.Done()
+		if err := a.orderService.PreloadRecentOrder(ctx, limit); err != nil {
+			a.log.Error("Error preloading order", zap.Error(err))
+		}
+	}()
+
 	// Запускаем Kafka consumer
 	a.wg.Add(1)
 	go func() {
 		defer a.wg.Done()
-		a.startKafka(ctx, ttl)
+		a.startKafka(ctx)
 	}()
 
 	// Запускаем HTTP сервер в отдельной горутине
@@ -91,7 +99,7 @@ func (a *App) Run(ttl time.Duration) error {
 	return runErr
 }
 
-func (a *App) startKafka(ctx context.Context, ttl time.Duration) {
+func (a *App) startKafka(ctx context.Context) {
 	defer a.log.Info("Kafka consumer stopped")
 
 	// Создаем отдельный контекст для Kafka, который не зависит от основного
@@ -128,7 +136,7 @@ func (a *App) startKafka(ctx context.Context, ttl time.Duration) {
 				continue
 			}
 
-			if err := a.orderService.SetOrder(ctx, order, ttl); err != nil {
+			if err := a.orderService.SetOrder(ctx, order); err != nil {
 				a.log.Error("Error caching order", zap.Error(err))
 				continue
 			}

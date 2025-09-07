@@ -10,8 +10,7 @@ CREATE TABLE IF NOT EXISTS orders (
     sm_id INTEGER NOT NULL CHECK (sm_id >= 0),
     date_created TIMESTAMPTZ NOT NULL,
     oof_shard VARCHAR(50) NOT NULL,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE TABLE IF NOT EXISTS deliveries (
@@ -23,8 +22,7 @@ CREATE TABLE IF NOT EXISTS deliveries (
     address TEXT NOT NULL,
     region VARCHAR(100) NOT NULL,
     email VARCHAR(255),
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
 
 CREATE TABLE IF NOT EXISTS payments (
@@ -39,8 +37,7 @@ CREATE TABLE IF NOT EXISTS payments (
     delivery_cost INTEGER NOT NULL CHECK (delivery_cost >= 0),
     goods_total INTEGER NOT NULL CHECK (goods_total >= 0),
     custom_fee INTEGER NOT NULL DEFAULT 0 CHECK (custom_fee >= 0),
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
 
 CREATE TABLE IF NOT EXISTS items (
@@ -57,8 +54,7 @@ CREATE TABLE IF NOT EXISTS items (
     nm_id INTEGER NOT NULL CHECK (nm_id >= 0),
     brand VARCHAR(255) NOT NULL,
     status INTEGER NOT NULL CHECK (status >= 0),
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
 
 CREATE INDEX IF NOT EXISTS idx_orders_track_number ON orders(track_number);

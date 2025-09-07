@@ -15,4 +15,7 @@ redis:
   redis_addr: "localhost:6379"
   redis_password: "123"
   db: 0
+  cache:
+    ttl: 10s
+    limit: 20
 log_level: "debug"

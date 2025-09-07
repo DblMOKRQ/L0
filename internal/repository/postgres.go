@@ -84,6 +84,9 @@ const (
         WHERE order_uid = $1
         ORDER BY id
     `
+	recentGetQuery = `
+		SELECT order_uid FROM orders ORDER BY date_created DESC LIMIT $1
+`
 )
 
 type Repository struct {
@@ -209,8 +212,8 @@ func (r *Repository) GetOrderByUID(ctx context.Context, orderUID string) (*model
 	)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			r.log.Error("Order not found", zap.String("order_uid", orderUID))
-			return nil, fmt.Errorf("order not found: %s", orderUID)
+			r.log.Warn("Order not found", zap.String("order_uid", orderUID))
+			return nil, models.OrderNotFoundError
 		}
 		r.log.Error("Error getting order", zap.Error(err))
 		return nil, fmt.Errorf("failed to get order: %w", err)
@@ -288,6 +291,43 @@ func (r *Repository) GetOrderByUID(ctx context.Context, orderUID string) (*model
 	}
 
 	return &order, nil
+}
+
+func (r *Repository) GetRecentOrders(ctx context.Context, limit int) ([]*models.Order, error) {
+	r.log.Debug("Getting recent orders ", zap.Int("limit", limit))
+	var orderUIDs []string
+	rows, err := r.db.Query(ctx, recentGetQuery, limit)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			r.log.Error("Error getting recent orders", zap.Error(err))
+			return nil, fmt.Errorf("error getting recent orders: %w", err)
+		}
+		r.log.Error("Error getting recent orders", zap.Error(err))
+		return nil, fmt.Errorf("error getting recent orders: %w", err)
+	}
+
+	defer rows.Close()
+
+	for rows.Next() {
+		var orderUID string
+		if err := rows.Scan(&orderUID); err != nil {
+			return nil, fmt.Errorf("failed to scan order UID: %w", err)
+		}
+		orderUIDs = append(orderUIDs, orderUID)
+	}
+
+	var orders []*models.Order
+	for _, uuid := range orderUIDs {
+		order, err := r.GetOrderByUID(ctx, uuid)
+		if err != nil {
+			r.log.Error("Error getting order", zap.Error(err))
+			return nil, fmt.Errorf("error getting order: %w", err)
+		}
+		orders = append(orders, order)
+	}
+	r.log.Debug("Received recent orders ", zap.Int("limit", limit))
+	return orders, nil
+
 }
 
 func (r *Repository) Close() {

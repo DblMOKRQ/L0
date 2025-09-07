@@ -1,6 +1,13 @@
 package models
 
-import "time"
+import (
+	"errors"
+	"time"
+)
+
+var (
+	OrderNotFoundError = errors.New("order not found")
+)
 
 type Order struct {
 	OrderUID          string    `json:"order_uid"`

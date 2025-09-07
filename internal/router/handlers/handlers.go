@@ -2,6 +2,8 @@ package handlers
 
 import (
 	"L0/internal/service"
+	"L0/models"
+	"errors"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 	"net/http"
@@ -23,6 +25,11 @@ func (h *OrderHandlers) GetOrder(c *gin.Context) {
 
 	order, err := h.orderService.GetOrderByUID(c.Request.Context(), orderID)
 	if err != nil {
+		if errors.Is(err, models.OrderNotFoundError) {
+			log.Warn("Order not found", zap.String("order_uid", orderID))
+			c.Status(http.StatusNotFound)
+			return
+		}
 		log.Error("Error getting order", zap.Error(err))
 		c.Status(http.StatusInternalServerError)
 		return
