@@ -18,8 +18,7 @@ import (
 func main() {
 	// TODO: Тесты написать
 	// TODO: Сделать readme файл
-	// TODO: Создать пользователя и выдать ему права
-	// TODO: Как будто бы можно limit перенести в структуру в service
+	// TODO: Удалить лишние комментарии
 	ctx := context.Background()
 	cfg := config.MustLoad()
 	log, err := logger.NewLogger(cfg.LogLevel)
@@ -28,7 +27,7 @@ func main() {
 	}
 	defer log.Sync()
 	log.Info("config", zap.Any("cfg", cfg))
-
+	// Можно раскомментировать для отправки сообщения (Не забудьте создать топик)
 	//producer := messagebroker.NewProducer(cfg.Brokers, cfg.Topic, log)
 	//if err := producer.SendMessage(context.Background(), "123", models.Order{
 	//	OrderUID:    "563feb7b2b84b6test",

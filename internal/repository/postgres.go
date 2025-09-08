@@ -56,9 +56,21 @@ const (
             custom_fee = EXCLUDED.custom_fee
     `
 	itemsQuery = `
-        INSERT INTO items (order_uid, chrt_id, track_number, price, rid, name, 
-                          sale, size, total_price, nm_id, brand, status)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+        INSERT INTO items (
+            order_uid, chrt_id, track_number, price, rid, name,
+            sale, size, total_price, nm_id, brand, status
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+        ON CONFLICT (order_uid, rid) DO UPDATE SET
+            chrt_id = EXCLUDED.chrt_id,
+            track_number = EXCLUDED.track_number,
+            price = EXCLUDED.price,
+            name = EXCLUDED.name,
+            sale = EXCLUDED.sale,
+            size = EXCLUDED.size,
+            total_price = EXCLUDED.total_price,
+            nm_id = EXCLUDED.nm_id,
+            brand = EXCLUDED.brand,
+            status = EXCLUDED.status
     `
 	orderQueryGet = `
         SELECT order_uid, track_number, entry, locale, internal_signature, 
@@ -325,7 +337,7 @@ func (r *Repository) GetRecentOrders(ctx context.Context, limit int) ([]*models.
 		}
 		orders = append(orders, order)
 	}
-	r.log.Debug("Received recent orders ", zap.Int("limit", limit))
+	r.log.Debug("Received recent orders ", zap.Int("orders", len(orders)))
 	return orders, nil
 
 }

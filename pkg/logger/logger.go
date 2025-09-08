@@ -22,7 +22,7 @@ func NewLogger(logLevel string) (*zap.Logger, error) {
 		encoding = "json"
 		encodeLevel = zapcore.LowercaseLevelEncoder
 	default:
-		level = zapcore.DebugLevel
+		level = zapcore.InfoLevel
 		encoding = "json"
 		encodeLevel = zapcore.LowercaseLevelEncoder
 	}

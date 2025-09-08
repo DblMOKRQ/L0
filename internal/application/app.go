@@ -25,8 +25,6 @@ type App struct {
 	shutdownCh   chan struct{} // Добавляем канал для остановки Kafka
 }
 
-// TODO: сделать redis в http сервер и проверить его
-// TODO: сделать заполнение кэша при запуске
 func NewApp(service *service.OrderService, router *router.Router, addr string, log *zap.Logger) *App {
 	return &App{
 		orderService: service,
@@ -101,7 +99,6 @@ func (a *App) Run(limit int) error {
 
 func (a *App) startKafka(ctx context.Context) {
 	defer a.log.Info("Kafka consumer stopped")
-
 	// Создаем отдельный контекст для Kafka, который не зависит от основного
 
 	for {
@@ -118,7 +115,6 @@ func (a *App) startKafka(ctx context.Context) {
 			if err != nil {
 
 				if errors.Is(err, context.DeadlineExceeded) {
-					a.log.Info("1231231231231")
 					continue
 				}
 				if errors.Is(err, context.Canceled) {

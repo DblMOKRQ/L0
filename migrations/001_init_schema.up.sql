@@ -1,39 +1,39 @@
 CREATE TABLE IF NOT EXISTS orders (
-    order_uid VARCHAR(255) PRIMARY KEY,
-    track_number VARCHAR(255) NOT NULL,
-    entry VARCHAR(50) NOT NULL,
-    locale VARCHAR(10) NOT NULL DEFAULT 'en',
-    internal_signature VARCHAR(255),
-    customer_id VARCHAR(255) NOT NULL,
-    delivery_service VARCHAR(100) NOT NULL,
-    shardkey VARCHAR(50) NOT NULL,
+    order_uid TEXT PRIMARY KEY,
+    track_number TEXT NOT NULL,
+    entry TEXT NOT NULL,
+    locale CHAR(2) NOT NULL DEFAULT 'en',
+    internal_signature TEXT,
+    customer_id TEXT NOT NULL,
+    delivery_service TEXT NOT NULL,
+    shardkey TEXT NOT NULL,
     sm_id INTEGER NOT NULL CHECK (sm_id >= 0),
     date_created TIMESTAMPTZ NOT NULL,
-    oof_shard VARCHAR(50) NOT NULL,
+    oof_shard TEXT NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
+    );
 
 CREATE TABLE IF NOT EXISTS deliveries (
-    order_uid VARCHAR(255) PRIMARY KEY REFERENCES orders(order_uid) ON DELETE CASCADE,
-    name VARCHAR(255) NOT NULL,
-    phone VARCHAR(50) NOT NULL,
-    zip VARCHAR(50) NOT NULL,
-    city VARCHAR(100) NOT NULL,
+    order_uid TEXT PRIMARY KEY REFERENCES orders(order_uid) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    phone TEXT NOT NULL,
+    zip TEXT NOT NULL,
+    city TEXT NOT NULL,
     address TEXT NOT NULL,
-    region VARCHAR(100) NOT NULL,
-    email VARCHAR(255),
+    region TEXT NOT NULL,
+    email TEXT,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
 
 CREATE TABLE IF NOT EXISTS payments (
-    order_uid VARCHAR(255) PRIMARY KEY REFERENCES orders(order_uid) ON DELETE CASCADE,
-    transaction VARCHAR(255) NOT NULL,
-    request_id VARCHAR(255),
-    currency VARCHAR(10) NOT NULL DEFAULT 'USD',
-    provider VARCHAR(100) NOT NULL,
+    order_uid TEXT PRIMARY KEY REFERENCES orders(order_uid) ON DELETE CASCADE,
+    transaction TEXT NOT NULL,
+    request_id TEXT,
+    currency CHAR(3) NOT NULL DEFAULT 'USD',
+    provider TEXT NOT NULL,
     amount INTEGER NOT NULL CHECK (amount >= 0),
     payment_dt BIGINT NOT NULL CHECK (payment_dt >= 0),
-    bank VARCHAR(100) NOT NULL,
+    bank TEXT NOT NULL,
     delivery_cost INTEGER NOT NULL CHECK (delivery_cost >= 0),
     goods_total INTEGER NOT NULL CHECK (goods_total >= 0),
     custom_fee INTEGER NOT NULL DEFAULT 0 CHECK (custom_fee >= 0),
@@ -42,19 +42,20 @@ CREATE TABLE IF NOT EXISTS payments (
 
 CREATE TABLE IF NOT EXISTS items (
     id SERIAL PRIMARY KEY,
-    order_uid VARCHAR(255) NOT NULL REFERENCES orders(order_uid) ON DELETE CASCADE,
+    order_uid TEXT NOT NULL REFERENCES orders(order_uid) ON DELETE CASCADE,
     chrt_id INTEGER NOT NULL CHECK (chrt_id >= 0),
-    track_number VARCHAR(255) NOT NULL,
+    track_number TEXT NOT NULL,
     price INTEGER NOT NULL CHECK (price >= 0),
-    rid VARCHAR(255) NOT NULL,
-    name VARCHAR(255) NOT NULL,
+    rid TEXT NOT NULL,
+    name TEXT NOT NULL,
     sale INTEGER NOT NULL DEFAULT 0 CHECK (sale >= 0),
-    size VARCHAR(50) NOT NULL,
+    size TEXT NOT NULL,
     total_price INTEGER NOT NULL CHECK (total_price >= 0),
     nm_id INTEGER NOT NULL CHECK (nm_id >= 0),
-    brand VARCHAR(255) NOT NULL,
-    status INTEGER NOT NULL CHECK (status >= 0),
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    brand TEXT NOT NULL,
+    status SMALLINT NOT NULL CHECK (status >= 0),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    CONSTRAINT unique_order_uid_rid UNIQUE (order_uid, rid)
     );
 
 CREATE INDEX IF NOT EXISTS idx_orders_track_number ON orders(track_number);
