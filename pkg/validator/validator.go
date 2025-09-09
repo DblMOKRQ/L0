@@ -1,7 +1,7 @@
 package validator
 
 import (
-	"L0/models"
+	"L0/internal/models"
 	"fmt"
 	"net/mail"
 	"regexp"
@@ -28,10 +28,10 @@ func ValidateOrder(order *models.Order) error {
 	if err := validateDelivery(&order.Delivery); err != nil {
 		errors = append(errors, fmt.Sprintf("delivery: %v", err))
 	}
-	if err := validatePayment(&order.Payment, order.OrderUID); err != nil { // order_uid должен ли совпадать??
+	if err := validatePayment(&order.Payment); err != nil {
 		errors = append(errors, fmt.Sprintf("payment: %v", err))
 	}
-	if err := validateItems(order.Items); err != nil { // track_number должен совпадать?
+	if err := validateItems(order.Items); err != nil {
 		errors = append(errors, fmt.Sprintf("items: %v", err))
 	}
 
@@ -79,18 +79,16 @@ func validateDelivery(delivery *models.Delivery) error {
 	}
 
 	if len(errors) > 0 {
-		return fmt.Errorf(strings.Join(errors, ", "))
+		return fmt.Errorf("%s", strings.Join(errors, ", "))
 	}
 	return nil
 }
 
-func validatePayment(payment *models.Payment, orderUID string) error {
+func validatePayment(payment *models.Payment) error {
 	var errors []string
 
 	if payment.Transaction == "" {
 		errors = append(errors, "transaction is required")
-	} else if payment.Transaction != orderUID {
-		errors = append(errors, "transaction must match order_uid")
 	}
 	if payment.Currency == "" {
 		errors = append(errors, "currency is required")
@@ -112,7 +110,7 @@ func validatePayment(payment *models.Payment, orderUID string) error {
 	}
 
 	if len(errors) > 0 {
-		return fmt.Errorf(strings.Join(errors, ", "))
+		return fmt.Errorf("%s", strings.Join(errors, ", "))
 	}
 	return nil
 }
@@ -139,16 +137,30 @@ func validateItems(items []models.Item) error {
 		if item.Sale < 0 {
 			errors = append(errors, fmt.Sprintf("item[%d]: sale cannot be negative", i))
 		}
+		if item.Brand == "" {
+			errors = append(errors, fmt.Sprintf("item[%d]: brand is required", i))
+		}
+		if item.Status <= 0 {
+			errors = append(errors, fmt.Sprintf("item[%d]: status is required", i))
+		}
+		if item.Rid == "" {
+			errors = append(errors, fmt.Sprintf("item[%d]: rid is required", i))
+		}
+		if item.TrackNumber == "" {
+			errors = append(errors, fmt.Sprintf("item[%d]: track_number is required", i))
+		}
+		if item.NmID <= 0 {
+			errors = append(errors, fmt.Sprintf("item[%d]: nm_id cannot be negative", i))
+		}
 	}
 
 	if len(errors) > 0 {
-		return fmt.Errorf(strings.Join(errors, "; "))
+		return fmt.Errorf("%s", strings.Join(errors, "; "))
 	}
 	return nil
 }
 
 func isValidPhone(phone string) bool {
-	// Простая проверка формата телефона
 	phoneRegex := regexp.MustCompile(`^\+?[0-9]{10,15}$`)
 	return phoneRegex.MatchString(phone)
 }

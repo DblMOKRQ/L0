@@ -1,7 +1,7 @@
 package service
 
 import (
-	"L0/models"
+	"L0/internal/models"
 	"L0/pkg/validator"
 	"context"
 	"encoding/json"

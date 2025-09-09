@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"L0/models"
+	"L0/internal/models"
 	"context"
 	"errors"
 	"fmt"
@@ -123,7 +123,6 @@ func (r *Repository) SaveOrder(ctx context.Context, order *models.Order) error {
 		}
 	}()
 
-	// Сохраняем основной заказ
 	_, err = tx.Exec(ctx, orderQuery,
 		order.OrderUID,
 		order.TrackNumber,
@@ -142,8 +141,6 @@ func (r *Repository) SaveOrder(ctx context.Context, order *models.Order) error {
 		return fmt.Errorf("failed to save order: %w", err)
 	}
 
-	// Сохраняем доставку
-
 	_, err = tx.Exec(ctx, deliveryQuery,
 		order.OrderUID,
 		order.Delivery.Name,
@@ -158,8 +155,6 @@ func (r *Repository) SaveOrder(ctx context.Context, order *models.Order) error {
 		r.log.Error("Error saving delivery order", zap.Error(err))
 		return fmt.Errorf("failed to save delivery: %w", err)
 	}
-
-	// Сохраняем платеж
 
 	_, err = tx.Exec(ctx, paymentQuery,
 		order.OrderUID,
@@ -179,8 +174,6 @@ func (r *Repository) SaveOrder(ctx context.Context, order *models.Order) error {
 		return fmt.Errorf("failed to save payment: %w", err)
 	}
 
-	// Сохраняем товары
-	//batch := &pgx.Batch{}
 	for _, item := range order.Items {
 		_, err := tx.Exec(ctx, itemsQuery,
 			order.OrderUID,
@@ -206,7 +199,6 @@ func (r *Repository) SaveOrder(ctx context.Context, order *models.Order) error {
 }
 
 func (r *Repository) GetOrderByUID(ctx context.Context, orderUID string) (*models.Order, error) {
-	// Получаем основной заказ
 
 	var order models.Order
 	err := r.db.QueryRow(ctx, orderQueryGet, orderUID).Scan(
@@ -231,8 +223,6 @@ func (r *Repository) GetOrderByUID(ctx context.Context, orderUID string) (*model
 		return nil, fmt.Errorf("failed to get order: %w", err)
 	}
 
-	// Получаем доставку
-
 	err = r.db.QueryRow(ctx, deliveryQueryGet, orderUID).Scan(
 		&order.Delivery.Name,
 		&order.Delivery.Phone,
@@ -246,8 +236,6 @@ func (r *Repository) GetOrderByUID(ctx context.Context, orderUID string) (*model
 		r.log.Error("Error getting delivery order", zap.Error(err))
 		return nil, fmt.Errorf("failed to get delivery: %w", err)
 	}
-
-	// Получаем платеж
 
 	err = r.db.QueryRow(ctx, paymentQueryGet, orderUID).Scan(
 		&order.Payment.Transaction,
@@ -266,7 +254,6 @@ func (r *Repository) GetOrderByUID(ctx context.Context, orderUID string) (*model
 		return nil, fmt.Errorf("failed to get payment: %w", err)
 	}
 
-	// Получаем товары
 	rows, err := r.db.Query(ctx, itemsQueryGet, orderUID)
 	if err != nil {
 		r.log.Error("Error getting items", zap.Error(err))

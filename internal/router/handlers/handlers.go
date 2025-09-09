@@ -1,8 +1,8 @@
 package handlers
 
 import (
+	"L0/internal/models"
 	"L0/internal/service"
-	"L0/models"
 	"errors"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"

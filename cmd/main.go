@@ -18,7 +18,7 @@ import (
 func main() {
 	// TODO: Тесты написать
 	// TODO: Сделать readme файл
-	// TODO: Удалить лишние комментарии
+	// TODO: убрать путь к миграции в файле storage
 	ctx := context.Background()
 	cfg := config.MustLoad()
 	log, err := logger.NewLogger(cfg.LogLevel)

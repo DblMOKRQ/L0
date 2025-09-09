@@ -1,7 +1,7 @@
 package redisClient
 
 import (
-	"L0/models"
+	"L0/internal/models"
 	"context"
 	"encoding/json"
 	"fmt"

@@ -22,7 +22,7 @@ type App struct {
 	log          *zap.Logger
 	wg           sync.WaitGroup
 	shutdownOnce sync.Once
-	shutdownCh   chan struct{} // Добавляем канал для остановки Kafka
+	shutdownCh   chan struct{}
 }
 
 func NewApp(service *service.OrderService, router *router.Router, addr string, log *zap.Logger) *App {
@@ -39,11 +39,9 @@ func NewApp(service *service.OrderService, router *router.Router, addr string, l
 }
 
 func (a *App) Run(limit int) error {
-	// Канал для сигналов ОС
 	sigCh := make(chan os.Signal, 1)
 	signal.Notify(sigCh, os.Interrupt, syscall.SIGTERM)
 
-	// Контекст для graceful shutdown
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -55,14 +53,12 @@ func (a *App) Run(limit int) error {
 		}
 	}()
 
-	// Запускаем Kafka consumer
 	a.wg.Add(1)
 	go func() {
 		defer a.wg.Done()
 		a.startKafka(ctx)
 	}()
 
-	// Запускаем HTTP сервер в отдельной горутине
 	serverErr := make(chan error, 1)
 	a.wg.Add(1)
 	go func() {
@@ -86,7 +82,6 @@ func (a *App) Run(limit int) error {
 		cancel()
 	}
 
-	// Начинаем graceful shutdown
 	if shutdownErr := a.shutdown(ctx); shutdownErr != nil {
 		a.log.Error("Shutdown error", zap.Error(shutdownErr))
 		if runErr == nil {
@@ -99,14 +94,13 @@ func (a *App) Run(limit int) error {
 
 func (a *App) startKafka(ctx context.Context) {
 	defer a.log.Info("Kafka consumer stopped")
-	// Создаем отдельный контекст для Kafka, который не зависит от основного
 
 	for {
 		select {
-		case <-ctx.Done(): // Основной контекст приложения
+		case <-ctx.Done():
 			a.log.Info("Main context cancelled, stopping Kafka consumer")
 			return
-		case <-a.shutdownCh: // Сигнал shutdown
+		case <-a.shutdownCh:
 			a.log.Info("Shutdown signal received, stopping Kafka consumer")
 			return
 		default:
@@ -126,7 +120,6 @@ func (a *App) startKafka(ctx context.Context) {
 				continue
 			}
 
-			// Сохраняем заказ используя основной контекст
 			if err := a.orderService.SaveOrder(ctx, order); err != nil {
 				a.log.Error("Error saving order to DB", zap.Error(err))
 				continue
@@ -146,14 +139,11 @@ func (a *App) startKafka(ctx context.Context) {
 func (a *App) shutdown(ctx context.Context) error {
 	var shutdownErr error
 
-	// Гарантируем однократный вызов shutdown
 	a.shutdownOnce.Do(func() {
 		a.log.Info("Initiating graceful shutdown...")
 
-		// 1. Закрываем канал shutdown чтобы остановить Kafka consumer
 		close(a.shutdownCh)
 
-		// 2. Останавливаем HTTP сервер
 		shutdownCtx, cancel := context.WithTimeout(ctx, 15*time.Second)
 		defer cancel()
 
@@ -164,7 +154,6 @@ func (a *App) shutdown(ctx context.Context) error {
 			a.log.Info("HTTP server stopped gracefully")
 		}
 
-		// 3. Закрываем Kafka соединение
 		if err := a.orderService.CloseConsumer(); err != nil {
 			a.log.Error("Failed to close Kafka connection", zap.Error(err))
 			if shutdownErr != nil {
@@ -176,11 +165,8 @@ func (a *App) shutdown(ctx context.Context) error {
 			a.log.Info("Kafka connection closed")
 		}
 
-		// 4. Закрываем репозиторий
-
 		a.orderService.CloseRepo()
 
-		// 5. Ждем завершения всех горутин с таймаутом
 		waitDone := make(chan struct{})
 		go func() {
 			a.wg.Wait()
