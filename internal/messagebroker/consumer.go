@@ -7,8 +7,13 @@ import (
 	"go.uber.org/zap"
 )
 
+type Reader interface {
+	ReadMessage(context.Context) (kafka.Message, error)
+	Close() error
+}
+
 type Consumer struct {
-	reader *kafka.Reader
+	reader Reader
 	log    *zap.Logger
 }
 
