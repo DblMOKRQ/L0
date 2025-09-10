@@ -62,3 +62,7 @@ type Item struct {
 	Brand       string `json:"brand"`
 	Status      int    `json:"status"`
 }
+
+type ErrorResponse struct {
+	Error string `json:"error"`
+}

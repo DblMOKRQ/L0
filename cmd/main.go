@@ -1,6 +1,7 @@
 package main
 
 import (
+	//_ "L0/docs"
 	"L0/internal/application"
 	"L0/internal/config"
 	"L0/internal/messagebroker"
@@ -15,10 +16,19 @@ import (
 	"go.uber.org/zap"
 )
 
+// @title L0
+// @version 1.0
+// @description API для получение заказов
+
+// @contact.name API Support
+// @contact.email ravilkarimov06@mail.ru
+
+// @license.name Apache 2.0
+// @license.url http://www.apache.org/licenses/LICENSE-20.0.html
+
+// @host localhost:8080
+// @BasePath /
 func main() {
-	// TODO: Тесты написать
-	// TODO: Сделать readme файл
-	// TODO: убрать путь к миграции в файле storage
 	ctx := context.Background()
 	cfg := config.MustLoad()
 	log, err := logger.NewLogger(cfg.LogLevel)

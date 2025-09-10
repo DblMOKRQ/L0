@@ -5,10 +5,6 @@
       <functions>
         <function importPath="L0/internal/repository" name="NewStorage" />
       </functions>
-      <methods>
-        <method importPath="L0/internal/messagebroker" receiver="*Consumer" name="ReadMessage" />
-        <method importPath="github.com/jackc/pgx/v5/pgxpool" receiver="*Pool" name="Acquire" />
-      </methods>
     </inspection_tool>
   </profile>
 </component>

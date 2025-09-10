@@ -1,9 +1,12 @@
 package router
 
 import (
+	_ "L0/docs"
 	"L0/internal/router/handlers"
 	"L0/internal/router/middleware"
 	"github.com/gin-gonic/gin"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 	"go.uber.org/zap"
 	"net/http"
 )
@@ -27,12 +30,13 @@ func NewRouter(handler *handlers.OrderHandlers, mode string, log *zap.Logger) *R
 		log:     log,
 	}
 	router.setupRouter()
-	log.Info("mode", zap.String("mode", mode))
 
 	return router
 }
 func (r *Router) setupRouter() {
+
 	r.rout.Use(middleware.LoggingMiddleware(r.log))
+	r.rout.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	r.rout.GET("/order/:orderUID", r.handler.GetOrder)
 	r.rout.LoadHTMLGlob("static/*")
 	r.rout.GET("/", func(c *gin.Context) {

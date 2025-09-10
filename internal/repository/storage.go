@@ -10,6 +10,8 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	_ "github.com/lib/pq"
 	"go.uber.org/zap"
+	"os"
+	"path/filepath"
 )
 
 type Storage struct {
@@ -64,7 +66,17 @@ func NewStorage(ctx context.Context, user string, password string, host string, 
 }
 
 func runMigrations(connStr string) error {
-	m, err := migrate.New("file://C:/Users/Равиль/GolandProjects/L0/migrations", connStr)
+	migratePath := os.Getenv("MIGRATE_PATH")
+	if migratePath == "" {
+		migratePath = "./migrations"
+	}
+	absPath, err := filepath.Abs(migratePath)
+	if err != nil {
+		return fmt.Errorf("failed to get absolute path: %w", err)
+	}
+	absPath = filepath.ToSlash(absPath)
+	migrateUrl := fmt.Sprintf("file://%s", absPath)
+	m, err := migrate.New(migrateUrl, connStr)
 	if err != nil {
 		return fmt.Errorf("start migrations error %v", err)
 	}

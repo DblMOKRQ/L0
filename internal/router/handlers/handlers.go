@@ -5,6 +5,7 @@ import (
 	"L0/internal/service"
 	"errors"
 	"github.com/gin-gonic/gin"
+
 	"go.uber.org/zap"
 	"net/http"
 )
@@ -17,6 +18,17 @@ func NewOrderHandlers(orderService *service.OrderService) *OrderHandlers {
 	return &OrderHandlers{orderService: orderService}
 }
 
+// GetOrder godoc
+// @Summary Get an order by UID
+// @Description Retrieves order details by its UID
+// @Tags orders
+// @Accept json
+// @Produce json
+// @Param orderUID path string true "Order UID"
+// @Success 200 {object} models.Order
+// @Failure 404 {object} nil "Not Found"
+// @Failure 500 {object} nil "Internal Error"
+// @Router /orders/{orderUID} [get]
 func (h *OrderHandlers) GetOrder(c *gin.Context) {
 	log := c.Value("logger").(*zap.Logger)
 	log.Info("Handling getting order")
