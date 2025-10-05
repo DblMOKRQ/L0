@@ -184,7 +184,3 @@ go test ./internal/service -run TestOrderService
 ## Лицензия
 
 См. файл [LICENSE](LICENSE).
-
----
-
-Если нужны дополнительные разделы (метрики, деплой в Kubernetes, примеры сообщений Kafka) — дайте знать.
